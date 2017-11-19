@@ -1,6 +1,6 @@
 const cryptocurrencies = require('./route');
 
-function initCryptocurrency(app) {
+function initUser(app) {
   app.use('/cc', cryptocurrencies);
 }
 

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// Cryptocurrency Schema
+// User Schema
 const CryptocurrencySchema = mongoose.Schema({
   name: {
     type: String,
