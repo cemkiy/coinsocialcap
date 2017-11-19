@@ -1,0 +1,27 @@
+{
+  "name": "coinsocialcap",
+  "version": "0.0.1",
+  "description": "Share your forecast for crypto currencies.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/night-owls/coinsocialcap.git"
+  },
+  "keywords": [
+    "bitcoin",
+    "etherium",
+    "litecoin",
+    "crypto",
+    "coin",
+    "forecast"
+  ],
+  "author": "cemkiy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/night-owls/coinsocialcap/issues"
+  },
+  "homepage": "https://github.com/night-owls/coinsocialcap#readme"
+}
