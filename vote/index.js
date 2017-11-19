@@ -1,7 +1,7 @@
-const cryptocurrencies = require('./route');
+const votes = require('./route');
 
-function initUser(app) {
-  app.use('/cc', cryptocurrencies);
+function initVote(app) {
+  app.use('/votes', votes);
 }
 
-module.exports = initCryptocurrency;
+module.exports = initVote;

@@ -2,15 +2,19 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 // User Schema
-const CryptocurrencySchema = mongoose.Schema({
-  name: {
-    type: String,
+const VoteSchema = mongoose.Schema({
+  user_id:{
+    type:mongoose.Schema.Types.ObjectId,
     required:true
   },
-  shortening: {
-    type: String,
-    required: true
+  estimate_id:{
+    type:mongoose.Schema.Types.ObjectId,
+    required:true
   },
+  vote:{
+    type:String,
+    required:true
+  }
   created_at:{
     type: Date,
     default: Date.now
@@ -24,24 +28,24 @@ const CryptocurrencySchema = mongoose.Schema({
   }
 });
 
-const Cryptocurrency = module.exports = mongoose.model('Cryptocurrency', CryptocurrencySchema);
+const Vote = module.exports = mongoose.model('Vote', VoteSchema);
 
-module.exports.getCryptocurrencyById = function(id, callback) {
-  Cryptocurrency.findById(id, callback);
+module.exports.getVoteById = function(id, callback) {
+  Vote.findById(id, callback);
 }
 
-module.exports.getCryptocurrency = function(cryptocurrency_name, callback) {
-  // TODO: /cc?filters link
+module.exports.getVote = function(vote_name, callback) {
+  // TODO: /vote?filters link
   const query = {
-    name: cryptocurrency_name
+    name: vote_name
   }
-  Cryptocurrency.findOne(query, callback);
+  Vote.findOne(query, callback);
 }
 
-// TODO: Update CC
-// TODO: Delete CC
-// TODO: Get CCs
-// TODO: Add new CC
+// TODO: Update Vote
+// TODO: Delete Vote
+// TODO: Get Votes
+// TODO: Add new Vote
 
 
 }
