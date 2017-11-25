@@ -141,12 +141,12 @@ module.exports.listUsers = function(filter, callback) {
 module.exports.updateUser = function(id, updateUser, callback) {
   User.findById(id, function(err, user) {
     if (err) return handleError(err);
+    updateUser.updated_at=new Date();
     user.set(updateUser);
     user.save(callback);
   });
 }
 
-// TODO: Delete User
 // TODO: Change Password
 // TODO: Forgot Password
 // TODO: Add Friend

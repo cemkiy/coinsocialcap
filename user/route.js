@@ -76,6 +76,23 @@ router.put('/:userId', passport.authenticate('jwt', {
   });
 });
 
+// Delete User
+router.delete('/:userId', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  User.updateUser(req.params.userId, {deleted_at:new Date()}, (err, deletedUser) => {
+    if (err)
+      throw err;
+
+    if (!deletedUser) {
+      return res.status(400).json({
+        msg: 'User not deleted!'
+      });
+    }
+    return res.status(204).json();
+  });
+});
+
 // Login
 router.post('/login', (req, res, next) => {
   const email = req.body.email;
