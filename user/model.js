@@ -18,8 +18,7 @@ const UserSchema = mongoose.Schema({
     required: true
   },
   password: {
-    type: String,
-    required: true
+    type: String
   },
   birthday: {
     type: Date,
@@ -138,7 +137,15 @@ module.exports.listUsers = function(filter, callback) {
   User.find(query, callback);
 }
 
-// TODO: Update User
+// Update User
+module.exports.updateUser = function(id, updateUser, callback) {
+  User.findById(id, function(err, user) {
+    if (err) return handleError(err);
+    user.set(updateUser);
+    user.save(callback);
+  });
+}
+
 // TODO: Delete User
 // TODO: Change Password
 // TODO: Forgot Password

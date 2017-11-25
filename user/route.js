@@ -59,6 +59,23 @@ router.get('/', passport.authenticate('jwt', {
   });
 });
 
+// Update User
+router.put('/:userId', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  User.updateUser(req.params.userId, req.body, (err, updatedUser) => {
+    if (err)
+      throw err;
+
+    if (!updatedUser) {
+      return res.status(400).json({
+        msg: 'User not updated!'
+      });
+    }
+    return res.status(200).json(updatedUser);
+  });
+});
+
 // Login
 router.post('/login', (req, res, next) => {
   const email = req.body.email;
