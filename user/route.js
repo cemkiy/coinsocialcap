@@ -5,19 +5,14 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const User = require('./model');
 
-// Register
+// Create User
 router.post('/', (req, res, next) => {
-  let newUser = new User({
-    name: req.body.name,
-    email: req.body.email,
-    username: req.body.username,
-    password: req.body.password
-  });
+  let newUser = new User(req.body);
 
   User.addUser(newUser, (err, user) => {
     if (err) {
       res.status(400).json({
-        msg: 'Failed to register user'
+        msg: err
       });
     } else {
       res.status(201).json({
@@ -28,13 +23,50 @@ router.post('/', (req, res, next) => {
   })
 });
 
+// Get User
+router.get('/:userId', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  User.getUserById(req.params.userId, (err, user) => {
+    if (err)
+      throw err;
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: 'User not found'
+      });
+    }
+
+    return res.status(200).json(user);
+  });
+});
+
+// List Users
+router.get('/', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  User.listUsers(req.query, (err, users) => {
+    if (err)
+      throw err;
+
+    if (!users) {
+      return res.status(404).json({
+        msg: 'User not found'
+      });
+    }
+    return res.status(200).json(users);
+  });
+});
+
 // Login
 router.post('/login', (req, res, next) => {
-  const username = req.body.username;
+  const email = req.body.email;
   const password = req.body.password;
 
-  User.getUserByUsername(username, (err, user) => {
-    if (err) throw err;
+  User.getUserByEmail(email, (err, user) => {
+    if (err)
+      throw err;
 
     if (!user) {
       return res.status(404).json({
@@ -44,7 +76,8 @@ router.post('/login', (req, res, next) => {
     }
 
     User.comparePassword(password, user.password, (err, isMatch) => {
-      if (err) throw err;
+      if (err)
+        throw err;
 
       if (isMatch) {
         const token = jwt.sign({
@@ -53,14 +86,8 @@ router.post('/login', (req, res, next) => {
           expiresIn: 604800 // 1 week
         });
 
-        return res.status(200).json({
-          token: "Bearer " + token,
-          user: {
-            id: user._id,
-            name: user.name,
-            username: user.username,
-            email: user.email
-          }
+        return res.status(201).json({
+          token: token,
         });
       } else {
         return res.status(400).json({
@@ -71,13 +98,5 @@ router.post('/login', (req, res, next) => {
   });
 });
 
-// Profile
-router.get('/me', passport.authenticate('jwt', {
-  session: false
-}), (req, res, next) => {
-  res.status(200).json({
-    user: req.user
-  });
-});
 
 module.exports = router;
