@@ -9,7 +9,7 @@ const User = require('./model');
 router.post('/', (req, res, next) => {
   let newUser = new User(req.body);
 
-  User.addUser(newUser, (err, user) => {
+  User.createUser(newUser, (err, user) => {
     if (err) {
       res.status(400).json({
         msg: err

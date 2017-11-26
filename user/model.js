@@ -66,7 +66,9 @@ module.exports.listUsers = function(filter, callback) {
   if (filter.limit)
     limit = filter.limit;
 
-  query = {}
+  query = {
+    deleted_at:null
+  }
 
   if (filter.first_name)
     query["first_name"] = {
@@ -134,7 +136,7 @@ module.exports.listUsers = function(filter, callback) {
     query["updated_at"] = updated_at_query;
   }
 
-  User.find(query, callback);
+  User.find(query, callback).limit(limit);
 }
 
 // Update User
@@ -152,7 +154,8 @@ module.exports.updateUser = function(id, updateUser, callback) {
 // TODO: Add Friend
 // TODO: Remove Friend
 
-module.exports.addUser = function(newUser, callback) {
+// Create User
+module.exports.createUser = function(newUser, callback) {
   bcrypt.genSalt(10, (err, salt) => {
     bcrypt.hash(newUser.password, salt, (err, hash) => {
       if (err)

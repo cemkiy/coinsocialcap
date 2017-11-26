@@ -44,6 +44,8 @@ require('./config/passport')(passport);
 
 // Module Import
 const user = require('./user')(app);
+const cryptocurrency = require('./cryptocurrency')(app);
+
 
 // Index Route
 app.get('/', (req, res) => {
