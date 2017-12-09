@@ -32,8 +32,11 @@ const UserSchema = mongoose.Schema({
     type: Number,
     min: 0
   },
-  friends: {
-    type: [mongoose.Schema.Types.ObjectId]
+  followers: {
+    type: [String]
+  },
+  following:{
+    type: [String]
   },
   created_at: {
     type: Date,
@@ -151,8 +154,6 @@ module.exports.updateUser = function(id, updateUser, callback) {
 
 // TODO: Change Password
 // TODO: Forgot Password
-// TODO: Add Friend
-// TODO: Remove Friend
 
 // Create User
 module.exports.createUser = function(newUser, callback) {

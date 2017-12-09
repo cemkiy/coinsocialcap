@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+const Set = require('set')
 const config = require('../config');
 const User = require('./model');
+
 
 // Create User
 router.post('/', (req, res, next) => {
@@ -33,7 +35,6 @@ router.get('/:userId', passport.authenticate('jwt', {
 
     if (!user) {
       return res.status(404).json({
-        success: false,
         msg: 'User not found'
       });
     }
@@ -80,7 +81,9 @@ router.put('/:userId', passport.authenticate('jwt', {
 router.delete('/:userId', passport.authenticate('jwt', {
   session: false
 }), (req, res, next) => {
-  User.updateUser(req.params.userId, {deleted_at:new Date()}, (err, deletedUser) => {
+  User.updateUser(req.params.userId, {
+    deleted_at: new Date()
+  }, (err, deletedUser) => {
     if (err)
       throw err;
 
@@ -90,6 +93,100 @@ router.delete('/:userId', passport.authenticate('jwt', {
       });
     }
     return res.status(204).json();
+  });
+});
+
+// Follow User
+router.put('/:userId/friends/:friendId', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  User.getUserById(req.params.friendId, (err, user) => {
+    if (err)
+      throw err;
+
+    if (!user) {
+      return res.status(404).json({
+        msg: 'User not found'
+      });
+    }
+
+    following = new Set(req.user.following);
+    following.add(user.id);
+    followers = new Set(user.followers);
+    followers.add(req.user.id);
+    User.updateUser(req.user.id, {
+      following: following.get()
+    }, (err, updatedUser) => {
+      if (err)
+        throw err;
+
+      if (!updatedUser) {
+        return res.status(400).json({
+          msg: 'User not updated!'
+        });
+      }
+
+      User.updateUser(user.id, {
+        followers: followers.get()
+      }, (err, updatedOtherUser) => {
+        if (err)
+          throw err;
+
+        if (!updatedOtherUser) {
+          return res.status(400).json({
+            msg: 'User not updated!'
+          });
+        }
+        return res.status(200).json(updatedUser);
+      });
+    });
+  });
+});
+
+// Unfollow User
+router.delete('/:userId/friends/:friendId', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  User.getUserById(req.params.friendId, (err, user) => {
+    if (err)
+      throw err;
+
+    if (!user) {
+      return res.status(404).json({
+        msg: 'User not found'
+      });
+    }
+
+    following = new Set(req.user.following);
+    following.remove(user.id);
+    followers = new Set(user.followers);
+    followers.remove(req.user.id);
+    User.updateUser(req.user.id, {
+      following: following.get()
+    }, (err, updatedUser) => {
+      if (err)
+        throw err;
+
+      if (!updatedUser) {
+        return res.status(400).json({
+          msg: 'User not updated!'
+        });
+      }
+
+      User.updateUser(user.id, {
+        followers: followers.get()
+      }, (err, updatedOtherUser) => {
+        if (err)
+          throw err;
+
+        if (!updatedOtherUser) {
+          return res.status(400).json({
+            msg: 'User not updated!'
+          });
+        }
+        return res.status(200).json(updatedUser);
+      });
+    });
   });
 });
 
@@ -104,7 +201,6 @@ router.post('/login', (req, res, next) => {
 
     if (!user) {
       return res.status(404).json({
-        success: false,
         msg: 'User not found'
       });
     }
