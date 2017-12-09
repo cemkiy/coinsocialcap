@@ -26,16 +26,18 @@ const UserSchema = mongoose.Schema({
   },
   correct_score: {
     type: Number,
+    default: 0,
     min: 0
   },
   uncorrect_score: {
     type: Number,
+    default: 0,
     min: 0
   },
   followers: {
     type: [String]
   },
-  following:{
+  following: {
     type: [String]
   },
   created_at: {
@@ -70,7 +72,7 @@ module.exports.listUsers = function(filter, callback) {
     limit = filter.limit;
 
   query = {
-    deleted_at:null
+    deleted_at: null
   }
 
   if (filter.first_name)
@@ -146,10 +148,30 @@ module.exports.listUsers = function(filter, callback) {
 module.exports.updateUser = function(id, updateUser, callback) {
   User.findById(id, function(err, user) {
     if (err) return handleError(err);
-    updateUser.updated_at=new Date();
+    updateUser.updated_at = new Date();
     user.set(updateUser);
     user.save(callback);
   });
+}
+
+// Increment Score
+module.exports.incrementScore = function(id, type, callback) {
+  if (type == "correct_score")
+    return User.findOneAndUpdate({
+      _id: id
+    }, {
+      $inc: {
+        'correct_score': 1
+      }
+    }).exec();
+  else if (type == "uncorrect_score")
+    return User.findOneAndUpdate({
+      _id: id
+    }, {
+      $inc: {
+        'uncorrect_score': 1
+      }
+    }).exec();
 }
 
 // TODO: Change Password

@@ -7,7 +7,7 @@ const VoteSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true
   },
-  vote_id: {
+  estimate_id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true
   },

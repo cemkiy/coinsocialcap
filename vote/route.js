@@ -4,6 +4,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const Vote = require('./model');
+const Estimate = require('../estimate/model');
 
 
 // Create Vote
@@ -15,13 +16,30 @@ router.post('/', (req, res, next) => {
       res.status(400).json({
         msg: err
       });
-    } else {
+    }
+
+    Estimate.getEstimateById(vote.estimate_id, (err, estimate) => {
+      if (err)
+        throw err;
+
+      if (!estimate) {
+        return res.status(404).json({
+          success: false,
+          msg: 'Estimate not found'
+        });
+      }
+
+      Estimate.vote(estimate.id, vote.vote, err => {
+        if (err)
+          throw err;
+      });
+
       res.status(201).json({
         msg: 'Vote registered',
         vote: newVote
       });
-    }
-  })
+    });
+  });
 });
 
 // Get Vote
@@ -81,7 +99,9 @@ router.put('/:voteId', passport.authenticate('jwt', {
 router.delete('/:voteId', passport.authenticate('jwt', {
   session: false
 }), (req, res, next) => {
-  Vote.updateVote(req.params.voteId, {deleted_at:new Date()}, (err, deletedVote) => {
+  Vote.updateVote(req.params.voteId, {
+    deleted_at: new Date()
+  }, (err, deletedVote) => {
     if (err)
       throw err;
 

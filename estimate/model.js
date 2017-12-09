@@ -122,6 +122,28 @@ module.exports.updateEstimate = function(id, updateEstimate, callback) {
   });
 }
 
+// Voting
+module.exports.vote = function(id, type, callback) {
+  if (type == "rises")
+    return Estimate.findOneAndUpdate({
+      _id: id
+    }, {
+      $inc: {
+        'rises': 1,
+        'total_votes': 1
+      }
+    }).exec();
+  else if (type == "falls")
+    return User.findOneAndUpdate({
+      _id: id
+    }, {
+      $inc: {
+        'falls': 1,
+        'total_votes': 1
+      }
+    }).exec();
+}
+
 // Create Estimate
 module.exports.createEstimate = function(newEstimate, callback) {
   newEstimate.save(callback);
