@@ -25,6 +25,10 @@ const EstimateSchema = mongoose.Schema({
   result: {
     type: Boolean
   },
+  status:{
+    type:String,
+    default:"active"
+  },
   created_at: {
     type: Date,
     default: Date.now
@@ -90,6 +94,9 @@ module.exports.listEstimates = function(filter, callback) {
 
   if (filter.result)
     query["result"] = (filter.result == 'true');
+
+    if (filter.status)
+      query["status"] = filter.status
 
   if (filter.start_created_at || filter.end_created_at) {
     created_at_query = {}

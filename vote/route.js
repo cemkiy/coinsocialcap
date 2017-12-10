@@ -11,23 +11,40 @@ const Estimate = require('../estimate/model');
 router.post('/', (req, res, next) => {
   let newVote = new Vote(req.body);
 
-  Vote.createVote(newVote, (err, vote) => {
-    if (err) {
-      res.status(400).json({
-        msg: err
+  Vote.listVotes({
+    estimate_id: newVote.estimate_id,
+    user_id: newVote.user_id
+  }, (err, votes) => {
+    if (err)
+      throw err;
+
+    if (votes) {
+      return res.status(400).json({
+        msg: 'Repeated Vote Request'
       });
     }
 
-    Estimate.getEstimateById(vote.estimate_id, (err, estimate) => {
+    Estimate.getEstimateById(newVote.estimate_id, (err, estimate) => {
       if (err)
         throw err;
 
       if (!estimate) {
         return res.status(404).json({
-          success: false,
           msg: 'Estimate not found'
         });
+      } else if (estimate.status != "active") {
+        return res.status(400).json({
+          msg: 'Estimate timeout!'
+        });
       }
+
+      Vote.createVote(newVote, (err, vote) => {
+        if (err) {
+          res.status(400).json({
+            msg: err
+          });
+        }
+      });
 
       Estimate.vote(estimate.id, vote.vote, err => {
         if (err)

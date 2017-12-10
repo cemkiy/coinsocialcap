@@ -36,7 +36,7 @@ module.exports.getVoteById = function(id, callback) {
 }
 
 // List Votes
-module.exports.getVote = function(filter, callback) {
+module.exports.listVotes = function(filter, callback) {
   let limit = 25
   if (filter.limit)
     limit = filter.limit;
