@@ -20,6 +20,10 @@ const UserSchema = mongoose.Schema({
   password: {
     type: String
   },
+  verfied:{
+    type:Boolean,
+    default:false
+  },
   birthday: {
     type: Date,
     required: true

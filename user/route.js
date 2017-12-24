@@ -4,7 +4,13 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const Set = require('set')
 const config = require('../config');
+const mustache = require('mustache');
+const fs = require('fs');
+const mailgun = require('mailgun.js');
 const User = require('./model');
+
+var mg = mailgun.client({username: 'api', key: config.MAILGUN_API_KEY});
+var path = require('path');
 
 
 // Create User
@@ -17,6 +23,29 @@ router.post('/', (req, res, next) => {
         msg: err
       });
     } else {
+      // send e-mail
+      module.exports.getUserById = function(id, callback) {
+        filePath = path.join(__dirname, '../email_templates/basic.html');
+        fs.readFile(filePath, {encoding: 'utf-8'}, function(err,template_html){
+          if (!err) {
+              var view = {
+                message: "Please confirm your email with click below button.",
+                button_text: "Confirm Your Email"
+              }
+              var output = mustache.render(template_html, view);
+              mg.messages.create('sandboxe1e55da3f7a7423ba6d16a58c3ffbee8.mailgun.org', {
+                from: "CoinSocialCap <info@coinsocialcap.com>",
+                to: [user.email],
+                subject: "Confirmation Account",
+                html: output
+              })
+              .then(msg => console.log(msg)) // logs response data
+              .catch(err => console.log(err)); // logs any error
+          } else {
+              console.log(err);
+          }
+      });
+
       res.status(201).json({
         msg: 'User registered',
         user: newUser
@@ -202,6 +231,12 @@ router.post('/login', (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         msg: 'User not found'
+      });
+    }
+
+    if(!user.verfied){
+      return res.status(400).json({
+        msg: 'User not verified'
       });
     }
 
