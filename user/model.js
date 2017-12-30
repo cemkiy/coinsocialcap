@@ -20,9 +20,9 @@ const UserSchema = mongoose.Schema({
   password: {
     type: String
   },
-  verfied:{
-    type:Boolean,
-    default:false
+  verfied: {
+    type: Boolean,
+    default: false
   },
   birthday: {
     type: Date,
@@ -178,8 +178,19 @@ module.exports.incrementScore = function(id, type, callback) {
     }).exec();
 }
 
-// TODO: Change Password
 // TODO: Forgot Password
+
+// Change User
+module.exports.changePassword = function(user, password, callback) {
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+      if (err)
+        throw err;
+      user.password = hash;
+      user.save(callback);
+    });
+  })
+}
 
 // Create User
 module.exports.createUser = function(newUser, callback) {

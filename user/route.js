@@ -9,7 +9,10 @@ const fs = require('fs');
 const mailgun = require('mailgun.js');
 const User = require('./model');
 
-var mg = mailgun.client({username: 'api', key: config.MAILGUN_API_KEY});
+var mg = mailgun.client({
+  username: 'api',
+  key: config.MAILGUN_API_KEY
+});
 var path = require('path');
 
 
@@ -26,30 +29,33 @@ router.post('/', (req, res, next) => {
       // send e-mail
       module.exports.getUserById = function(id, callback) {
         filePath = path.join(__dirname, '../email_templates/basic.html');
-        fs.readFile(filePath, {encoding: 'utf-8'}, function(err,template_html){
+        fs.readFile(filePath, {
+          encoding: 'utf-8'
+        }, function(err, template_html) {
           if (!err) {
-              var view = {
-                message: "Please confirm your email with click below button.",
-                button_text: "Confirm Your Email"
-              }
-              var output = mustache.render(template_html, view);
-              mg.messages.create('sandboxe1e55da3f7a7423ba6d16a58c3ffbee8.mailgun.org', {
-                from: "CoinSocialCap <info@coinsocialcap.com>",
-                to: [user.email],
-                subject: "Confirmation Account",
-                html: output
-              })
+            var view = {
+              message: "Please confirm your email with click below button.",
+              button_text: "Confirm Your Email"
+            }
+            var output = mustache.render(template_html, view);
+            mg.messages.create(config.MAILGUN_SANDBOX, {
+              from: "CoinSocialCap <info@coinsocialcap.com>",
+              to: [user.email],
+              subject: "Confirmation Account",
+              html: output
+            })
               .then(msg => console.log(msg)) // logs response data
               .catch(err => console.log(err)); // logs any error
           } else {
-              console.log(err);
+            console.log(err);
           }
-      });
+        });
 
-      res.status(201).json({
-        msg: 'User registered',
-        user: newUser
-      });
+        res.status(201).json({
+          msg: 'User registered',
+          user: newUser
+        });
+      }
     }
   })
 });
@@ -219,6 +225,24 @@ router.delete('/:userId/friends/:friendId', passport.authenticate('jwt', {
   });
 });
 
+// Change Password
+router.put('/:userId/change_password', passport.authenticate('jwt', {
+  session: false
+}), (req, res, next) => {
+  if (req.body.password != req.body.repeat_password) {
+    return res.status(400).json({
+      msg: 'Password arent same!'
+    });
+  }
+
+  User.changePassword(req.user, req.body.password, (err, user) => {
+    if (err)
+      throw err;
+
+    return res.status(200).json(user);
+  });
+});
+
 // Login
 router.post('/login', (req, res, next) => {
   const email = req.body.email;
@@ -234,7 +258,7 @@ router.post('/login', (req, res, next) => {
       });
     }
 
-    if(!user.verfied){
+    if (!user.verfied) {
       return res.status(400).json({
         msg: 'User not verified'
       });
