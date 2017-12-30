@@ -1,3 +1,5 @@
+[![N|Solid](https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Tuerkischer_schachspieler_racknitz3.jpg/220px-Tuerkischer_schachspieler_racknitz3.jpg)
+
 # Coin Social Cap
 You could share your forecast for crypto currencies like others. System is create statistics.
 
