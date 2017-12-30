@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const util = require('util');
 
 
@@ -20,7 +21,7 @@ const UserSchema = mongoose.Schema({
   password: {
     type: String
   },
-  verfied: {
+  verified: {
     type: Boolean,
     default: false
   },
@@ -43,6 +44,12 @@ const UserSchema = mongoose.Schema({
   },
   following: {
     type: [String]
+  },
+  email_activation_key: {
+    type: String
+  },
+  forgot_password_token: {
+    type: String
   },
   created_at: {
     type: Date,
@@ -178,8 +185,6 @@ module.exports.incrementScore = function(id, type, callback) {
     }).exec();
 }
 
-// TODO: Forgot Password
-
 // Change User
 module.exports.changePassword = function(user, password, callback) {
   bcrypt.genSalt(10, (err, salt) => {
@@ -187,6 +192,7 @@ module.exports.changePassword = function(user, password, callback) {
       if (err)
         throw err;
       user.password = hash;
+      user.forgot_password_token = "";
       user.save(callback);
     });
   })
@@ -199,6 +205,7 @@ module.exports.createUser = function(newUser, callback) {
       if (err)
         throw err;
       newUser.password = hash;
+      newUser.email_activation_key = crypto.randomBytes(20).toString('hex');
       newUser.save(callback);
     });
   })

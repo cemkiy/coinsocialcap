@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const Set = require('set')
+const Set = require('set');
+const crypto = require('crypto');
 const config = require('../config');
 const mustache = require('mustache');
 const fs = require('fs');
@@ -35,7 +36,8 @@ router.post('/', (req, res, next) => {
           if (!err) {
             var view = {
               message: "Please confirm your email with click below button.",
-              button_text: "Confirm Your Email"
+              button_text: "Confirm Your Email",
+              button_link: "http://api.coinsocialcap.io/activation/" + user.email_activation_key
             }
             var output = mustache.render(template_html, view);
             mg.messages.create(config.MAILGUN_SANDBOX, {
@@ -58,6 +60,36 @@ router.post('/', (req, res, next) => {
       }
     }
   })
+});
+
+// Activate User
+router.get('/:userId/verify/:email_activation_key', (req, res, next) => {
+  User.getUserById(req.params.userId, (err, user) => {
+    if (err)
+      throw err;
+
+    if (!user) {
+      return res.status(404).json({
+        msg: 'User not found'
+      });
+    }
+
+    if (user.email_activation_key == req.params.email_activation_key) {
+      User.updateUser(req.params.userId, {
+        verified: true
+      }, (err, updatedUser) => {
+        if (err)
+          throw err;
+
+        if (!updatedUser) {
+          return res.status(400).json({
+            msg: 'User not updated!'
+          });
+        }
+        return res.status(200).json(updatedUser);
+      });
+    }
+  });
 });
 
 // Get User
@@ -225,6 +257,70 @@ router.delete('/:userId/friends/:friendId', passport.authenticate('jwt', {
   });
 });
 
+// Forgot Password
+router.post('/forgot_password/:forgot_password_token', (req, res, next) => {
+  User.getUserByEmail(req.body.email, (err, user) => {
+    if (err)
+      throw err;
+
+    if (!user) {
+      return res.status(404).json({
+        msg: 'User not found'
+      });
+    }
+
+    if (req.params.forgot_password_token && user.forgot_password_token == req.params.forgot_password_token) {
+      User.changePassword(user, req.body.new_password, (err, updatedUser) => {
+        if (err)
+          throw err;
+
+        return res.status(200).json(updatedUser);
+      });
+    } else {
+
+      // send e-mail
+      module.exports.getUserById = function(id, callback) {
+        User.updateUser(user.id, {
+          forgot_password_token: crypto.randomBytes(20).toString('hex')
+        }, (err, updatedUser) => {
+          if (err)
+            throw err;
+
+          if (!updatedUser) {
+            return res.status(400).json({
+              msg: 'User not updated!'
+            });
+          }
+
+          filePath = path.join(__dirname, '../email_templates/basic.html');
+          fs.readFile(filePath, {
+            encoding: 'utf-8'
+          }, function(err, template_html) {
+            if (!err) {
+              var view = {
+                message: "Please click below button for define new password.",
+                button_text: "Change Password",
+                button_link: "https://coinsocialcap.io/forgot_password/" + updatedUser.forgot_password_token
+              }
+              var output = mustache.render(template_html, view);
+              mg.messages.create(config.MAILGUN_SANDBOX, {
+                from: "CoinSocialCap <info@coinsocialcap.com>",
+                to: [updatedUser.email],
+                subject: "Forgot Password",
+                html: output
+              })
+                .then(msg => console.log(msg)) // logs response data
+                .catch(err => console.log(err)); // logs any error
+            } else {
+              console.log(err);
+            }
+          });
+        });
+      }
+    }
+  });
+});
+
 // Change Password
 router.put('/:userId/change_password', passport.authenticate('jwt', {
   session: false
@@ -258,7 +354,7 @@ router.post('/login', (req, res, next) => {
       });
     }
 
-    if (!user.verfied) {
+    if (!user.verified) {
       return res.status(400).json({
         msg: 'User not verified'
       });
